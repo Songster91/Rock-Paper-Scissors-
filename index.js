@@ -1,12 +1,6 @@
-console.log("Hello world");
-
-// the game is played against the computer so i have to write a function that
-// returns rock paper scissors randomly
-
-//create a function
-//write a code that returns the 3 value randomly
-// we can use the Math.random method here
-
+// ============================================
+// STEP 1: Get the computer's random choice
+// ============================================
 function getComputerChoice() {
   let choice = Math.random();
   if (choice < 0.3333) {
@@ -17,86 +11,90 @@ function getComputerChoice() {
     return "scissors";
   }
 }
-//Now we need to get the human choice .
-// we can use the prompt function here to get the input from the user
-// assume the user always gives the valid input
 
-function getHumanChoice() {
-  return prompt("Please Type Rock, Paper Or scissors");
-  // or
-  // let choice = prompt("Please Type Rock, Paper Or scissors");
-  // return choice;
-}
-
-//The score variable
+// ============================================
+// SCORE VARIABLES - track points across rounds
+// ============================================
 let humanScore = 0;
 let computerScore = 0;
 
+// Once someone hits 5, we lock the game
+let gameOver = false;
+
+// ============================================
+// GRAB THE DOM ELEMENTS ONCE (not every click)
+// ============================================
+const rockBtn = document.querySelector(".rock");
+const paperBtn = document.querySelector(".paper");
+const scissorsBtn = document.querySelector(".scissors");
+const resultDiv = document.querySelector(".result");
+const scoreDiv = document.querySelector(".score");
+
+// ============================================
+// STEP 2: playRound - now RETURNS a message
+// instead of console.logging it
+// ============================================
 function playRound(humanChoice, computerChoice) {
-  //make the human choice case insensitive
   humanChoice = humanChoice.toLowerCase();
 
-  //make the game logic
-
   if (humanChoice === computerChoice) {
-    console.log("Tie!");
-    return;
-  }
-  if (humanChoice === "rock" && computerChoice === "scissors") {
-    console.log("You Win!");
-    humanScore++;
-    return;
-  }
-  if (humanChoice === "paper" && computerChoice === "rock") {
-    console.log("You Win!");
-    humanScore++;
-    return;
-  }
-  if (humanChoice === "scissors" && computerChoice === "paper") {
-    console.log("You Win!");
-    humanScore++;
-    return;
-  }
-  if (humanChoice === "rock" && computerChoice === "paper") {
-    console.log("Computer Wins!");
-    computerScore++;
-    return;
-  }
-  if (humanChoice === "paper" && computerChoice === "scissors") {
-    console.log("Computer Wins!");
-    computerScore++;
-    return;
-  }
-  if (humanChoice === "scissors" && computerChoice === "rock") {
-    console.log("Computer Wins!");
-    computerScore++;
-    return;
+    return "Tie!";
   }
 
-  console.log("Warning!!Please type the correct word!");
-  return;
+  if (
+    (humanChoice === "rock" && computerChoice === "scissors") ||
+    (humanChoice === "paper" && computerChoice === "rock") ||
+    (humanChoice === "scissors" && computerChoice === "paper")
+  ) {
+    humanScore++;
+    return "You Win this round!";
+  }
+
+  // otherwise, computer wins
+  computerScore++;
+  return "Computer Wins this round!";
 }
 
-function playGame() {
-  for (let i = 1; i <= 5; i++) {
-    console.log(`\n--- Round ${i} ---`);
-    const humanSelection = getHumanChoice();
-    const computerSelection = getComputerChoice();
-    console.log(`You played: ${humanSelection}`);
-    console.log(`Computer played: ${computerSelection}`);
-    playRound(humanSelection, computerSelection);
-    console.log(`Score - You: ${humanScore} | Computer: ${computerScore}`);
-  }
+// ============================================
+// STEP 3 & 4: update the DOM after every round
+// ============================================
+function updateScoreboard() {
+  scoreDiv.textContent = `You: ${humanScore}  |  Computer: ${computerScore}`;
+}
 
-  console.log(`\n=== GAME OVER ===`);
-  console.log(`Final: You ${humanScore} - Computer ${computerScore}`);
-
-  if (humanScore > computerScore) {
-    console.log("🎉 YOU WIN THE GAME!");
-  } else if (computerScore > humanScore) {
-    console.log("💻 COMPUTER WINS THE GAME!");
-  } else {
-    console.log("🤝 IT'S A TIE!");
+function checkForWinner() {
+  if (humanScore === 5) {
+    resultDiv.textContent = "🎉 YOU WIN THE GAME! Refresh to play again.";
+    gameOver = true;
+  } else if (computerScore === 5) {
+    resultDiv.textContent = "💻 COMPUTER WINS THE GAME! Refresh to play again.";
+    gameOver = true;
   }
 }
-playGame();
+
+// ============================================
+// STEP 5: ONE function handles a full round,
+// used by all 3 buttons (no duplicate code)
+// ============================================
+function handleClick(humanChoice) {
+  if (gameOver) return; // stop everything if game already ended
+
+  const computerChoice = getComputerChoice();
+  const roundResult = playRound(humanChoice, computerChoice);
+
+  resultDiv.textContent = `You played ${humanChoice}, Computer played ${computerChoice}. ${roundResult}`;
+
+  updateScoreboard();
+  checkForWinner();
+}
+
+// ============================================
+// STEP 2: Event listeners — each button calls
+// handleClick with ITS OWN choice
+// ============================================
+rockBtn.addEventListener("click", () => handleClick("rock"));
+paperBtn.addEventListener("click", () => handleClick("paper"));
+scissorsBtn.addEventListener("click", () => handleClick("scissors"));
+
+// show the initial score (0 vs 0) on page load
+updateScoreboard();
